@@ -20,15 +20,14 @@ var render = Render.create({
     element: document.getElementById('viewport'),
     engine: engine,
     options:{
-        //wireframes: false
+        wireframes: false
     }
 });
 
 
 //create bodies
-var planet1 = Bodies.circle(400, 200, 30, {
-
-});
+var ship = Bodies.circle(400,200,20)
+Matter.Body.setParts(ship, [Bodies.polygon(400,200,3,15), Bodies.rectangle(420,200,35,23)])
 
 var planet2 = Bodies.circle(480, 50, 10, {
     planet: true,
@@ -44,7 +43,7 @@ var frame3 = Bodies.rectangle(800, 300, 10, 600, { isStatic: true });
 var frame4 = Bodies.rectangle(400, 0, 800, 10, { isStatic: true });
 
 // add all of the bodies to the world
-World.add(world, [planet1, planet2, planet3, frame1, frame2, frame3, frame4]);
+World.add(world, [ship, planet2, planet3, frame1, frame2, frame3, frame4]);
 
 var distance = function(p1, p2){
     var dx = p2.x-p1.x;
@@ -72,10 +71,24 @@ var tick_orig = Runner.tick;
 var tick_action = function(){
     for(body of world.bodies){
         if(body.planet){
-            body.force = g_force(body,planet1);
+            body.force = g_force(body,ship);
         }
     }
-    //if(Matter.SAT.collides(planet1, planet2).collided){
+    if(ship.forward_thrust && !ship.stop_thrust){
+        ship.force.x -= 0.0005*(Math.cos(ship.angle));
+        ship.force.y -= 0.0005*(Math.sin(ship.angle));
+    }
+    if(ship.stop_thrust){
+        ship.force.x = 0.0005*(Math.cos(ship.angle));
+        ship.force.y = 0.0005*(Math.sin(ship.angle));
+    }
+    if(ship.left_thrust && !ship.right_thrust){
+        ship.torque=-0.001;
+    }
+    if(ship.right_thrust && !ship.left_thrust){
+        ship.torque=0.001;
+    }
+    //if(Matter.SAT.collides(ship, planet2).collided){
 
     //}
 }
@@ -95,21 +108,38 @@ Render.run(render);
 
 window.onkeydown = function(event){
     switch(event.key){
-        case 'w':
-        planet1.force.y=-0.01
-        break;
         case 'a':
-        planet1.force.x=-0.01
-        break;
-        case 's':
-        planet1.force.y=0.01
+        ship.left_thrust = true;
         break;
         case 'd':
-        planet1.force.x=0.01
+        ship.right_thrust = true;
+        break;
+        case 'w':
+        ship.forward_thrust = true;
+        break;
+        case 's':
+        ship.stop_thrust = true;
         break;
         case ' ':
         console.log('space')
-        planet1.force = {x:0,y:0}
+        console.log(ship);
+        break;
+    }
+}
+
+window.onkeyup = function(event){
+    switch(event.key){
+        case 'a':
+        ship.left_thrust = false;
+        break;
+        case 'd':
+        ship.right_thrust = false;
+        break;
+        case 'w':
+        ship.forward_thrust = false;
+        break;
+        case 's':
+        ship.stop_thrust = false;
         break;
     }
 }
