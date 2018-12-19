@@ -9,7 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "matter-js": "^0.14.1"
+    "matter-js": "^0.14.2"
   },
   "devDependencies": {
     "http-server": "^0.11.1"
